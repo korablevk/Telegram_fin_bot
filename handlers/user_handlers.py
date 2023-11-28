@@ -6,14 +6,26 @@ from aiogram.filters import Command, CommandStart
 from exception import exceptions
 import services.expenses as expenses
 from exception.categories import Categories
+from config_data.config import Config, load_config
 
 logging.basicConfig(level=logging.INFO)
 
 router = Router()
 
 
+def auth(func):
+    config: Config = load_config()
+    async def wrapper(message):
+        if message.from_user.id not in config.tg_bot.admin_ids:
+            return await message.reply('Access Denied', reply=False)
+        return await func(message)
+
+    return wrapper
+
+
 @router.message(CommandStart())
 @router.message(Command(commands='help'))
+@auth
 async def send_welcome(message: types.Message):
     """Отправляет приветственное сообщение и помощь по боту"""
     await message.answer(
@@ -22,7 +34,8 @@ async def send_welcome(message: types.Message):
         "Сегодняшняя статистика: /today\n"
         "За текущий месяц: /month\n"
         "Последние внесённые расходы: /expenses\n"
-        "Категории трат: /categories")
+        "Категории трат: /categories",
+    )
 
 
 @router.message(lambda message: message.text.startswith('/del'))
@@ -66,12 +79,13 @@ async def list_expenses(message: types.Message):
         return
 
     last_expenses_rows = [
-        f"{expense.amount} руб. на {expense.category_name} — нажми "
+        f"{expense.amount} tl. на {expense.category_name} — нажми "
         f"/del{expense.id} для удаления"
         for expense in last_expenses]
     answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* "\
             .join(last_expenses_rows)
     await message.answer(answer_message)
+
 
 
 @router.message()
@@ -83,6 +97,6 @@ async def add_expense(message: types.Message):
         await message.answer(str(e))
         return
     answer_message = (
-        f"Добавлены траты {expense.amount} руб на {expense.category_name}.\n\n"
+        f"Добавлены траты {expense.amount} tl на {expense.category_name}.\n\n"
         f"{expenses.get_today_statistics()}")
     await message.answer(answer_message)
