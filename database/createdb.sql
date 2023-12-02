@@ -33,4 +33,4 @@ values
     ("subscriptions", "подписки", false, "подписка"),
     ("other", "прочее", true, "");
 
-insert into budget(codename, daily_limit) values ('base', 500);
+insert into budget(codename, daily_limit) values ('base', 400);

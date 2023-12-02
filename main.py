@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from handlers import other_handlers, user_handlers
 from keyboards.main_menu import set_main_menu
+from aiogram.client.session.aiohttp import AiohttpSession
 
 # Инициализируем логгер
 logger = logging.getLogger(__name__)
@@ -25,7 +26,8 @@ async def main():
     config: Config = load_config()
 
     # Инициализируем бот и диспетчер
-    bot = Bot(token=config.tg_bot.token)
+    session = AiohttpSession(proxy="http://proxy.server:3128")
+    bot = Bot(token=config.tg_bot.token, session=session)
     dp = Dispatcher()
 
     # Настраиваем главное меню бота
